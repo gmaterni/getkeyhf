@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="it">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Demo API Key Client</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 40px;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+
+            #result {
+                margin-top: 20px;
+                padding: 10px;
+                background: #f5f5f5;
+            }
+        </style>
+    </head>
+
+    <body>
+        <h1>Test API Key Service</h1>
+        <button onclick="getApiKey()">Ottieni API Key</button>
+        <div id="result"></div>
+
+        <script>
+            async function getApiKey() {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = 'Caricamento...';
+
+                try {
+                    // Questo URL cambierà con il tuo dominio Vercel effettivo
+                    const response = await fetch('/api/getkey');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        resultDiv.innerHTML = `
+                        <h3>API Key ottenuta con successo!</h3>
+                        <p><strong>Key:</strong> ${data.apiKey}</p>
+                        <p><strong>Timestamp:</strong> ${data.timestamp}</p>
+                    `;
+                    } else {
+                        resultDiv.innerHTML = '<p style="color: red;">Errore nel recupero della chiave</p>';
+                    }
+                } catch (error) {
+                    resultDiv.innerHTML = `<p style="color: red;">Errore: ${error.message}</p>`;
+                }
+            }
+        </script>
+    </body>
+
+</html>

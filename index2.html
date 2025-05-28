@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="it">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Demo API Key Client</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 40px;
+                background: #333333;
+                color: #ffffff;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+
+            #result {
+                margin-top: 20px;
+                padding: 10px;
+                background: #444444;
+                color: #ffffff;
+            }
+        </style>
+    </head>
+
+    <body>
+        <h1>Test API Key Service</h1>
+        <button onclick="getApiKey()">Ottieni API Key</button>
+        <div id="result"></div>
+        <script>
+
+            function getApiUrl() {
+                const hostname = window.location.hostname;
+
+                if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                    return 'https://getkeyhf.vercel.app/api/getkey';
+                } else if (hostname.includes('vercel.app')) {
+                    return '/api/getkey';
+                } else {
+                    return 'https://getkeyhf.vercel.app/api/getkey';
+                }
+            }
+
+            async function getKey() {
+                try {
+                    const url = getApiUrl();
+                    console.log('Chiamando URL:', url); // Debug: mostra quale URL stiamo usando
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`Server ha risposto con errore ${response.status}: ${response.statusText}`);
+                    }
+                    const responseText = await response.text();
+                    console.log('Risposta grezza ricevuta:', responseText); // Debug
+                    let data;
+                    try {
+                        data = JSON.parse(responseText);
+                    } catch (parseError) {
+                        throw new Error(`Risposta del server non è JSON valido: ${parseError.message}`);
+                    }
+                    if (!data.success) {
+                        throw new Error(`API ha restituito errore: ${data.error || 'Errore sconosciuto'}`);
+                    }
+                    return {
+                        success: true,
+                        data: data
+                    };
+
+                } catch (error) {
+                    console.error('Errore in getKey:', error);
+                    return {
+                        success: false,
+                        error: error.message
+                    };
+                }
+            }
+
+            async function getApiKey() {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '<p>Caricamento in corso...</p>';
+                try {
+                    const result = await getKey();
+                    if (result.success) {
+                        const apiData = result.data;
+                        resultDiv.innerHTML = `
+                <div >
+                    <h3>✅ API Key ottenuta con successo!</h3>
+                    <p><strong>Chiave:</strong> <code>${apiData.apiKey}</code></p>
+                    <p><strong>Timestamp:</strong> ${apiData.timestamp}</p>
+                    <p><strong>Ambiente:</strong> ${window.location.hostname}</p>
+                </div>
+            `;
+                    } else {
+                        resultDiv.innerHTML = `
+                <div style="color: red;">
+                    <h3>❌ Errore nel recupero della chiave</h3>
+                    <p><strong>Dettaglio:</strong> ${result.error}</p>
+                    <p><em>Controlla la console per maggiori informazioni</em></p>
+                </div>
+            `;
+                    }
+                } catch (error) {
+                    console.error('Errore imprevisto in getApiKey:', error);
+                    resultDiv.innerHTML = `
+            <div style="color: red;">
+                <h3>❌ Errore imprevisto</h3>
+                <p>Si è verificato un errore imprevisto. Controlla la console per i dettagli.</p>
+            </div>
+        `;
+                }
+            }
+
+
+
+
+        </script>
+    </body>
+
+</html>

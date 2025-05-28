@@ -15,7 +15,8 @@ export default function handler(req, res) {
 
   // Per ora restituiamo una chiave di esempio
   // Qui potrai implementare la tua logica specifica
-  const apiKey = "demo-key-" + Date.now();
+  // const apiKey = "demo-key-" + Date.now();
+  const apiKey = "hf_ULJYcDahMATjZAhfLQnknnUDuNNGoQVogJs";
 
   // Restituiamo la risposta in formato JSON
   res.status(200).json({

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="it">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Demo API Key Client</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 40px;
+                background: #333333;
+                color: #ffffff;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+
+            #result {
+                margin-top: 20px;
+                padding: 10px;
+                background: #444444;
+                color: #ffffff;
+            }
+        </style>
+    </head>
+
+    <body>
+        <h1>Test API Key Service</h1>
+        <button onclick="getApiKey()">Ottieni API Key</button>
+        <div id="result"></div>
+        <script>
+            const AUTHORIZED_DOMAINS = [
+                'localhost',
+                '127.0.0.1',
+                '0.0.0.0',
+                'getkeyhf.vercel.app',
+                'gmaterni.github.iol'
+                // 'https://gmaterni.github.io/ragrqs/static/ragrqs.html'
+                // Aggiungi altri domini qui quando necessario
+                // 'mio-altro-dominio.com',
+                // 'staging.miosito.com'
+            ];
+
+            async function getKey() {
+                try {
+                    const currentHostname = window.location.hostname;
+                    if (!AUTHORIZED_DOMAINS.includes(currentHostname)) {
+                        return {
+                            ok: false,
+                            error: `Dominio non autorizzato: ${currentHostname}. Domini permessi: ${AUTHORIZED_DOMAINS.join(', ')}`,
+                            apikey: null
+                        };
+                    }
+                    const apiUrl = 'https://getkeyhf.vercel.app/api/getkey';
+                    console.log('Dominio autorizzato, chiamando:', apiUrl);
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        return {
+                            ok: false,
+                            error: `Server ha risposto con errore ${response.status}: ${response.statusText}`,
+                            apikey: null
+                        };
+                    }
+                    let data;
+                    try {
+                        data = await response.json();
+                    } catch (parseError) {
+                        return {
+                            ok: false,
+                            error: `Risposta del server non è JSON valido: ${parseError.message}`,
+                            apikey: null
+                        };
+                    }
+                    if (!data.success) {
+                        return {
+                            ok: false,
+                            error: data.error || 'Errore sconosciuto dall\'API',
+                            apikey: null
+                        };
+                    }
+                    return {
+                        ok: true,
+                        error: null,
+                        apikey: data.apiKey
+                    };
+
+                } catch (error) {
+                    console.error('Errore in getKey:', error);
+                    return {
+                        ok: false,
+                        error: error.message,
+                        apikey: null
+                    };
+                }
+            }
+
+            async function getApiKey() {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '<p>Caricamento in corso...</p>';
+                const result = await getKey();
+                if (result.ok) {
+                    resultDiv.innerHTML = `
+            <div style="color: yellow; border: 1px solid red; padding: 15px; border-radius: 5px;">
+                <h5>API Key ottenuta con successo!</h5>
+                <p><strong>Chiave:</strong> <code>${result.apikey}</code></p>
+                <p><strong>Dominio:</strong> ${window.location.hostname}</p>
+            </div>
+        `;
+                } else {
+                    resultDiv.innerHTML = `
+            <div style="color: red; border: 1px solid red; padding: 15px; border-radius: 5px;">
+                <h3>❌ Errore nell'operazione</h3>
+                <p><strong>Dominio:</strong> ${window.location.hostname}</p>
+                <p><strong>Errore:</strong> ${result.error}</p>
+            </div>
+        `;
+                }
+            }
+        </script>
+    </body>
+
+</html>
